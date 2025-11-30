@@ -100,33 +100,69 @@ p.description {
 <script>
 function assignLanguage() {
   const username = document.getElementById("username").value.trim();
-  if(!username){ 
-    document.getElementById("result").innerText="Unesi nick!";
+  const result = document.getElementById("result");
+
+  if (!username) {
+    result.textContent = "Unesi nick!";
+    result.className = "error";
     return;
   }
 
-  const script = document.createElement("script");
-  const callbackName = "handleResult";
-  script.src = `https://script.google.com/macros/s/AKfycbwTJc3MKQvw_DXJSgzas2RLJjkseu4dbXPE4ha9Kv2OrzS7YQCSVjpwyqswb7miA6lG_g/exec?username=${encodeURIComponent(username)}&callback=${callbackName}`;
-  document.body.appendChild(script);
-  // script.remove(); // ne uklanjaj odmah, neka se izvrši
-}
+  // očisti prethodni rezultat
+  result.textContent = "Loading...";
+  result.className = "";
 
-// JSONP funkcija koja prima odgovor
-function handleResult(data){
-  const resultEl = document.getElementById("result");
-  if(data.assigned){
-    resultEl.innerText = "Tvoj jezik: " + data.assigned;
-  } else {
-    resultEl.innerText = data.error || "Došlo je do greške";
-  }
+  // Generiši jedinstveno ime za callback kako bi izbegao konflikte
+  const cbName = "cb_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+
+  // Definiši callback
+  window[cbName] = function(data) {
+    try {
+      if (data.error) {
+        result.textContent = data.error;
+        result.className = "error";
+      } else if (data.assigned && data.message) {
+        result.textContent = data.message + " — " + data.assigned;
+        result.className = "assigned";
+      } else {
+        result.textContent = "Dodeljen ti je jezik: " + data.assigned;
+        result.className = "assigned";
+      }
+    } catch (e) {
+      console.error("Callback handling error:", e);
+      result.textContent = "Nešto nije u redu sa odgovorom servera.";
+      result.className = "error";
+    } finally {
+      // cleanup: ukloni script tag i callback
+      setTimeout(() => {
+        if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+        try { delete window[cbName]; } catch(e){ window[cbName] = undefined; }
+      }, 100);
+    }
+  };
+
+  // Kreiraj script tag
+  const scriptEl = document.createElement("script");
+  const base = "https://script.google.com/macros/s/AKfycbxRzbkZC0VL5fpH0XBaZ8f_0yDXChl9YypIIEpJUm-y8M7v2yC0XmbdvpeCUOaP-R0ung/exec";
+  scriptEl.src = base + "?username=" + encodeURIComponent(username) + "&callback=" + cbName;
+  scriptEl.onerror = function(err){
+    console.error("Script tag load error:", err);
+    result.textContent = "Greška u komunikaciji sa serverom (network).";
+    result.className = "error";
+    // cleanup
+    if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+    try { delete window[cbName]; } catch(e){ window[cbName] = undefined; }
+  };
+  document.body.appendChild(scriptEl);
 }
 </script>
 
 
 
+
 </body>
 </html>
+
 
 
 
