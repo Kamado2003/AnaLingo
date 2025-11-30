@@ -98,7 +98,7 @@ p.description {
 <p id="result"></p>
 
 <script>
-async function assignLanguage() {
+function assignLanguage() {
   const username = document.getElementById("username").value.trim();
   const result = document.getElementById("result");
 
@@ -108,32 +108,33 @@ async function assignLanguage() {
     return;
   }
 
-  const url = "https://script.google.com/macros/s/AKfycbzmpZ9EpYnHCSqtbBP7a_ghkNgoqgL6yDnlMHowc_gK7PrvgDXO9W56pDxBLmFPzbwlTQ/exec?username=" + encodeURIComponent(username);
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-
+  // Pravimo globalnu funkciju
+  window.handleResponse = function(data) {
     if (data.error) {
       result.textContent = data.error;
       result.className = "error";
-    } 
-    else if (data.assigned && data.message) {
+    } else if (data.assigned && data.message) {
       result.textContent = data.message + " — " + data.assigned;
       result.className = "assigned";
-    } 
-    else {
+    } else {
       result.textContent = "Dodeljen ti je jezik: " + data.assigned;
       result.className = "assigned";
     }
+  };
 
-  } catch (e) {
-    result.textContent = "Greška u komunikaciji sa serverom.";
-    result.className = "error";
-  }
+  // Kreiramo <script> koji zaobilazi CORS
+  const script = document.createElement("script");
+  script.src =
+    "https://script.google.com/macros/s/AKfycbzHcXkDcbPByNmftaEDsbhyENnwBBQEHBRaGksl1svaZsVxLtL5E9onCwHyb38R6pPBPg/exec" +
+    "?username=" + encodeURIComponent(username) +
+    "&callback=handleResponse";
+
+  document.body.appendChild(script);
 }
 </script>
 
+
 </body>
 </html>
+
 
