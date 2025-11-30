@@ -100,41 +100,33 @@ p.description {
 <script>
 function assignLanguage() {
   const username = document.getElementById("username").value.trim();
-  const result = document.getElementById("result");
-
-  if (!username) {
-    result.textContent = "Unesi nick!";
-    result.className = "error";
+  if(!username){ 
+    document.getElementById("result").innerText="Unesi nick!";
     return;
   }
 
-  // Pravimo globalnu funkciju
-  window.handleResponse = function(data) {
-    if (data.error) {
-      result.textContent = data.error;
-      result.className = "error";
-    } else if (data.assigned && data.message) {
-      result.textContent = data.message + " — " + data.assigned;
-      result.className = "assigned";
-    } else {
-      result.textContent = "Dodeljen ti je jezik: " + data.assigned;
-      result.className = "assigned";
-    }
-  };
-
-  // Kreiramo <script> koji zaobilazi CORS
   const script = document.createElement("script");
-  script.src =
-    "https://script.google.com/macros/s/AKfycbzHcXkDcbPByNmftaEDsbhyENnwBBQEHBRaGksl1svaZsVxLtL5E9onCwHyb38R6pPBPg/exec" +
-    "?username=" + encodeURIComponent(username) +
-    "&callback=handleResponse";
-
+  const callbackName = "handleResult";
+  script.src = `https://script.google.com/macros/s/AKfycbwTJc3MKQvw_DXJSgzas2RLJjkseu4dbXPE4ha9Kv2OrzS7YQCSVjpwyqswb7miA6lG_g/exec?username=${encodeURIComponent(username)}&callback=${callbackName}`;
   document.body.appendChild(script);
+  // script.remove(); // ne uklanjaj odmah, neka se izvrši
+}
+
+// JSONP funkcija koja prima odgovor
+function handleResult(data){
+  const resultEl = document.getElementById("result");
+  if(data.assigned){
+    resultEl.innerText = "Tvoj jezik: " + data.assigned;
+  } else {
+    resultEl.innerText = data.error || "Došlo je do greške";
+  }
 }
 </script>
 
 
+
 </body>
 </html>
+
 
 
