@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sr">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>AnaLingo 🎵</title>
@@ -16,14 +16,12 @@ body {
     margin: 0;
     padding: 40px 20px;
 }
-
 h1 {
     color: #7e1389;
     font-size: 2.5rem;
     text-align: center;
     margin-bottom: 30px;
 }
-
 #assignForm {
     background-color: #fff;
     padding: 30px 40px;
@@ -34,47 +32,10 @@ h1 {
     align-items: center;
     gap: 15px;
 }
-
-.input-field {
-    padding: 12px 20px;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    width: 250px;
-}
-
-.submit-btn {
-    padding: 12px 25px;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: none;
-    background-color: #7e1389;
-    color: #fff;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.submit-btn:hover {
-    background-color: #38063f;
-}
-
-#result {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #333;
-    min-height: 1.5em;
-    text-align: center;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.result-show {
-    animation: fadeIn 0.5s ease;
-}
+input { padding: 10px 15px; font-size: 18px; border-radius: 8px; border: 1px solid #ccc; width: 250px; }
+button { padding: 12px 30px; font-size: 18px; border-radius: 8px; border: none; background-color: #7e1389; color: #fff; cursor: pointer; }
+button:hover { background-color: #38063f; }
+#result { margin-top: 20px; font-size: 20px; color: #333; text-align: center; }
 </style>
 </head>
 <body>
@@ -82,51 +43,35 @@ h1 {
 <h1>AnaLingo ▶ dodela jezika 🎵🎧</h1>
 
 <div id="assignForm">
-    <input type="text" id="username" class="input-field" placeholder="Unesi svoj nick 💜">
-    <button class="submit-btn" onclick="assignLanguage()">Dodeli jezik</button>
+    <input type="text" id="username" placeholder="Unesi svoj nick 💜">
+    <button onclick="assignLanguage()">Dodeli jezik</button>
 </div>
 
 <p id="result"></p>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbw1Jq9CQ_WVubSn5L-bhYern6-fO5XawgDgFWyHn4j8ZEcV8G8ectR0_5LDtrrRVE15EA/exec";
+const API_URL = "OVDE_UBACI_TVOJ_GAS_WEB_APP_URL";
 
 async function assignLanguage() {
     const username = document.getElementById("username").value.trim();
-    const resultEl = document.getElementById("result");
-    resultEl.textContent = "";
-    resultEl.classList.remove("result-show");
-
     if (!username) {
-        resultEl.textContent = "Unesi nick sa foruma 💜";
-        resultEl.classList.add("result-show");
+        document.getElementById("result").textContent = "Unesi nick sa foruma 💜";
         return;
     }
 
     try {
-        const res = await fetch(API_URL + "?username=" + encodeURIComponent(username), {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username })
         });
-
-        if (!res.ok) throw new Error("Network response not ok");
-
         const data = await res.json();
-        if (data.assigned) {
-            resultEl.textContent = `Tvoj jezik: ${data.assigned}`;
-        } else {
-            resultEl.textContent = data.error || data.message || "Došlo je do greške";
-        }
-        resultEl.classList.add("result-show");
-
+        document.getElementById("result").textContent = data.assigned ? "Tvoj jezik: " + data.assigned : data.error;
     } catch (err) {
-        console.error(err);
-        resultEl.textContent = "Greška u konekciji. Pokušaj ponovo.";
-        resultEl.classList.add("result-show");
+        document.getElementById("result").textContent = "Greška u konekciji. Pokušaj ponovo.";
     }
 }
 </script>
 
 </body>
 </html>
-
