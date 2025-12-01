@@ -122,7 +122,7 @@ function assignLanguage() {
         result.textContent = data.error;
         result.className = "error";
       } else if (data.assigned && data.message) {
-        result.textContent = data.message + " — " + data.assigned;
+        result.textContent = data.message;
         result.className = "assigned";
       } else {
         result.textContent = "Dodeljen ti je jezik: " + data.assigned;
@@ -162,6 +162,7 @@ function assignLanguage() {
 
 </body>
 </html>
+
 
 
 
