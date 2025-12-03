@@ -12,7 +12,7 @@ p.description { color:#333; font-size:1.1rem; text-align:center; margin-bottom:4
 input { padding:10px; font-size:16px; border:1px solid #ccc; border-radius:6px; width:220px; }
 button { padding:10px 20px; font-size:16px; border:none; border-radius:6px; background:#7e1389; color:#fff; cursor:pointer; }
 button:hover { background:#38063f; }
-#result, #adminResult { margin-top:10px; min-height:1.2em; text-align:center; font-weight:600; }
+#result, #adminResult, #adminRemaining { margin-top:10px; min-height:1.2em; text-align:center; font-weight:600; }
 #result.assigned { color:#007700; }
 #result.error { color:#7e1389; }
 </style>
@@ -21,7 +21,8 @@ button:hover { background:#38063f; }
 
 <h1>AnaLingo ▶ dodela jezika 🎵🎧</h1>
 <p class="description">Unesi svoj nick sa foruma i dobićeš jezik svog predloga za AnaLingo!🔮</p>
-<!-- user -->
+
+<!-- USER -->
 <div id="assignForm">
   <input type="text" id="username" placeholder="Unesi svoj nick 💜">
   <button onclick="assignLanguage()">Dodeli jezik</button>
@@ -32,11 +33,13 @@ button:hover { background:#38063f; }
 <div id="adminForm">
   <input type="password" id="adminPassword" placeholder="Admin lozinka 🔒">
   <button onclick="loadAdmin()">Prikaži sve dodele</button>
+  <button onclick="resetLanguages()">Resetuj jezike</button>
   <div id="adminResult"></div>
+  <div id="adminRemaining"></div>
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbx2sEDAYRb8Ryp7OC3blqkp2TcCMQ-Rp7gY1c2oi8XXreWm5gTJC_JLMrC020PBdvqFeA/exec"; // 
+const BASE_URL = "https://script.google.com/macros/s/AKfycbyLBIv9p1IOU602UZkdYZkZACF7JTnRpTF3PWT68QZfHhdcN7OlDWtjM07pJD5WCrh1cg/exec"; // 
 
 function assignLanguage(){
   const username = document.getElementById("username").value.trim();
@@ -58,14 +61,18 @@ function assignLanguage(){
 function loadAdmin(){
   const pw = document.getElementById("adminPassword").value.trim();
   const adminResult = document.getElementById("adminResult");
+  const remainingDiv = document.getElementById("adminRemaining");
   if(!pw){ adminResult.textContent="Unesi lozinku"; return; }
-  adminResult.textContent="Loading...";
+  adminResult.textContent="Loading..."; remainingDiv.textContent="";
   const cb = "cb_"+Date.now()+"_"+Math.floor(Math.random()*1000);
   window[cb] = function(data){
     if(data.error){ adminResult.textContent=data.error; }
     else{
       const list = Object.entries(data.assigned).map(([k,v])=>k+" → "+v).join("<br>");
-      adminResult.innerHTML = list || "Još niko nije dobio jezik.";
+      adminResult.innerHTML = list || "Još niko nije dobio jezik 💜";
+
+      const remList = Object.entries(data.languages).map(([k,v])=>k+" : "+v).join("<br>");
+      remainingDiv.innerHTML = "<strong>Preostali jezici:</strong><br>"+remList;
     }
     delete window[cb];
   };
@@ -73,8 +80,22 @@ function loadAdmin(){
   s.src = BASE_URL+"?admin=true&adminPassword="+encodeURIComponent(pw)+"&callback="+cb;
   document.body.appendChild(s);
 }
+
+function resetLanguages(){
+  const pw = document.getElementById("adminPassword").value.trim();
+  if(!pw){ alert("Unesi lozinku"); return; }
+  if(pw !== "ANALINGOTEST1234"){ alert("Pogrešna lozinka"); return; }
+  const cb = "cb_"+Date.now()+"_"+Math.floor(Math.random()*1000);
+  window[cb] = function(data){
+    alert("Jezici su resetovani!");
+    delete window[cb];
+    loadAdmin(); // refresh
+  };
+  const s = document.createElement("script");
+  s.src = BASE_URL+"?reset=true&callback="+cb;
+  document.body.appendChild(s);
+}
 </script>
 
 </body>
 </html>
-
